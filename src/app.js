@@ -42,6 +42,7 @@ class Bowling {
             }
         );
         this.ball = this.createSphere(this.ballMaterial);
+        this.ballThrown = false;
 
         this.createBox(0, -0.4, -12, 3, 0.2, 25); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
@@ -96,7 +97,6 @@ class Bowling {
 
     initControl(object) {
         let strength = -160;
-        let throwBall = false;
         let rotation = 0;
 
         const onKeyDown = (event) => {
@@ -104,13 +104,13 @@ class Bowling {
             if(event.keyCode === 82) { // r / Reset
                 location.reload();
             }
-            
-            if(throwBall === false) {
+
+            if(this.ballThrown === false) {
                 switch (event.keyCode) {
                     // Throw ball
                     case 32: // space / Throw ball
                         object.body.applyImpulse(new CANNON.Vec3(0+rotation, 0, strength), object.body.position);
-                        throwBall = true;
+                        this.ballThrown = true;
                         break;
 
                     // Move
@@ -312,6 +312,7 @@ class Bowling {
             this.ball.body.position.set(0, 0, 0);
             this.ball.body.velocity.set(0, 0, 0);
             this.ball.body.angularVelocity.set(0, 0, 0);
+            this.ballThrown = false;
         }
 
         // Copy coordinates from Cannon.js to Three.js
