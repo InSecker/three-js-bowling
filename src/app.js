@@ -19,8 +19,8 @@ class Bowling {
         this.scene = new THREE.Scene();
         this.sceneObjects = [];
 
-        this.pinOffset = 20;
-        this.pinRows = 5;
+        this.pinOffset = 10;
+        this.pinRows = 3;
 
         const canvas = document.querySelector(".webgl")
         this.renderer = new THREE.WebGLRenderer({
@@ -194,7 +194,8 @@ class Bowling {
                 this.scene.add(mesh);
                 this.sceneObjects.push({
                     mesh: mesh,
-                    body: body
+                    body: body,
+                    type: 'ground'
                 });
             },
 
@@ -239,12 +240,14 @@ class Bowling {
 
         this.sceneObjects.push({
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'pin'
         });
 
         return {
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'pin'
         };
     }
 
@@ -269,12 +272,14 @@ class Bowling {
         this.scene.add(mesh);
         this.sceneObjects.push({
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'ball'
         });
 
         return {
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'ball'
         };
     }
 
@@ -312,6 +317,18 @@ class Bowling {
             this.ball.body.position.set(0, 0, 0);
             this.ball.body.velocity.set(0, 0, 0);
             this.ball.body.angularVelocity.set(0, 0, 0);
+
+            // Remove pins that are below the ground
+            this.sceneObjects.forEach((el) => {
+                if(el.type === 'pin') {
+                    if(el.body.position.y < -0.15) {
+                        this.scene.remove(el.mesh);
+                        this.world.remove(el.body);
+                    }
+                }  
+            });
+
+            // Throw ball again
             this.ballThrown = false;
         }
 
