@@ -95,14 +95,15 @@ class Bowling {
     }
 
     initControl(object) {
-        const strength = 100;
+        const strength = -150;
         let throwBall = false;
+        let rotation = 0;
 
         const onKeyDown = (event) => {
             if(throwBall === false) {
                 switch (event.keyCode) {
                     case 32: // space / Throw ball
-                        object.body.applyImpulse(new CANNON.Vec3(0, 15, -100), object.body.position);
+                        object.body.applyImpulse(new CANNON.Vec3(0+rotation, 0, strength), object.body.position);
                         throwBall = true;
                         break;
                     case 37: // left / Move left
@@ -114,7 +115,16 @@ class Bowling {
                         if(object.body.position.x < .5) {
                             object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
                         }
-                    break;
+                        break;
+                    case 38: // up / Increase rotation
+                        if(rotation < 6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), rotation += .75);
+                        }
+                        break;
+                    case 40: // down / Decrease rotation
+                        if(rotation > -6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
+                        }
                 }
             };
         };
