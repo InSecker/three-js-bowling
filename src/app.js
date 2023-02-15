@@ -96,21 +96,21 @@ class Bowling {
 
     initControl(object) {
         const strength = 100;
-        let spear = false;
+        let throwBall = false;
 
         const onKeyDown = (event) => {
-            if(spear === false) {
+            if(throwBall === false) {
                 switch (event.keyCode) {
-                    case 32: // space
+                    case 32: // space / Throw ball
                         object.body.applyImpulse(new CANNON.Vec3(0, 15, -100), object.body.position);
-                        spear = true;
+                        throwBall = true;
                         break;
-                    case 37: // left
+                    case 37: // left / Move left
                         if(object.body.position.x > -.5) {
                             object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
                         }
                         break;
-                    case 39: // right
+                    case 39: // right / Move right
                         if(object.body.position.x < .5) {
                             object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
                         }
