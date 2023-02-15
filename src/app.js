@@ -3,9 +3,9 @@ import * as THREE from 'three'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
-import * as dat from 'dat.gui';
+// import * as dat from 'dat.gui';
 
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 
 const sizes = {
     width: document.body.clientWidth,
@@ -19,8 +19,8 @@ class Bowling {
         this.scene = new THREE.Scene();
         this.sceneObjects = [];
 
-        this.pinOffset = 1;
-        this.pinRows = 1;
+        this.pinOffset = 20;
+        this.pinRows = 5;
 
         const canvas = document.querySelector(".webgl")
         this.renderer = new THREE.WebGLRenderer({
@@ -95,24 +95,30 @@ class Bowling {
     }
 
     initControl(object) {
-        const strength = 0.3;
+        const strength = 100;
+        let spear = false;
+
         const onKeyDown = (event) => {
-            switch (event.keyCode) {
-                case 38: // up
-                    object.body.applyImpulse(new CANNON.Vec3(0, 0, -strength * 2), object.body.position);
+            if(spear === false) {
+                switch (event.keyCode) {
+                    case 32: // space
+                        object.body.applyImpulse(new CANNON.Vec3(0, 15, -100), object.body.position);
+                        spear = true;
+                        break;
+                    case 37: // left
+                        if(object.body.position.x > -.5) {
+                            object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
+                        }
+                        break;
+                    case 39: // right
+                        if(object.body.position.x < .5) {
+                            object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
+                        }
                     break;
-                case 37: // left
-                    if (object.body.velocity.x > -0.5) {
-                        object.body.applyImpulse(new CANNON.Vec3(-strength, 0, 0), object.body.position);
-                    }
-                    break;
-                case 39: // right
-                    if (object.body.velocity.x < 0.5) {
-                        object.body.applyImpulse(new CANNON.Vec3(strength, 0, 0), object.body.position);
-                    }
-                    break;
-            }
+                }
+            };
         };
+
         document.addEventListener('keydown', onKeyDown, false);
     }
 
