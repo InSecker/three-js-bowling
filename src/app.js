@@ -3,9 +3,9 @@ import * as THREE from 'three'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
-import * as dat from 'dat.gui';
+// import * as dat from 'dat.gui';
 
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 
 const sizes = {
     width: document.body.clientWidth,
@@ -19,8 +19,8 @@ class Bowling {
         this.scene = new THREE.Scene();
         this.sceneObjects = [];
 
-        this.pinOffset = 1;
-        this.pinRows = 1;
+        this.pinOffset = 10;
+        this.pinRows = 3;
 
         const canvas = document.querySelector(".webgl")
         this.renderer = new THREE.WebGLRenderer({
@@ -42,6 +42,7 @@ class Bowling {
             }
         );
         this.ball = this.createSphere(this.ballMaterial);
+        this.ballThrown = false;
 
         this.createBox(0, -0.4, -12, 3, 0.2, 25); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
@@ -95,24 +96,67 @@ class Bowling {
     }
 
     initControl(object) {
-        const strength = 0.3;
+        let strength = -160;
+        let rotation = 0;
+
         const onKeyDown = (event) => {
-            switch (event.keyCode) {
-                case 38: // up
-                    object.body.applyImpulse(new CANNON.Vec3(0, 0, -strength * 2), object.body.position);
-                    break;
-                case 37: // left
-                    if (object.body.velocity.x > -0.5) {
-                        object.body.applyImpulse(new CANNON.Vec3(-strength, 0, 0), object.body.position);
-                    }
-                    break;
-                case 39: // right
-                    if (object.body.velocity.x < 0.5) {
-                        object.body.applyImpulse(new CANNON.Vec3(strength, 0, 0), object.body.position);
-                    }
-                    break;
+            // Reset
+            if(event.keyCode === 82) { // r / Reset
+                location.reload();
             }
+
+            if(this.ballThrown === false) {
+                switch (event.keyCode) {
+                    // Throw ball
+                    case 32: // space / Throw ball
+                        object.body.applyImpulse(new CANNON.Vec3(0+rotation, 0, strength), object.body.position);
+                        this.ballThrown = true;
+                        break;
+
+                    // Move
+                    case 37: // left / Move left
+                        if(object.body.position.x > -.5) {
+                            object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
+                        }
+                        break;
+                    case 39: // right / Move right
+                        if(object.body.position.x < .5) {
+                            object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
+                        }
+                        break;
+
+                    // Rotation
+                    case 38: // up / Increase rotation
+                        if(rotation < 6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), rotation += .75);
+                        }
+                        break;
+                    case 40: // down / Decrease rotation
+                        if(rotation > -6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
+                        }
+                        break;
+
+                    // Strength    
+                    case 49: // 1 / Strength 1
+                        strength = -120;
+                        break;
+                    case 50: // 2 / Strength 2
+                        strength = -140;
+                        break;
+                    case 51: // 3 / Strength 3
+                        strength = -160;
+                        break;
+                    case 52: // 4 / Strength 4
+                        strength = -180;
+                        break;
+                    case 53: // 5 / Strength 5
+                        strength = -200;
+                        break;
+                }
+            };
         };
+
         document.addEventListener('keydown', onKeyDown, false);
     }
 
@@ -150,7 +194,8 @@ class Bowling {
                 this.scene.add(mesh);
                 this.sceneObjects.push({
                     mesh: mesh,
-                    body: body
+                    body: body,
+                    type: 'ground'
                 });
             },
 
@@ -195,12 +240,14 @@ class Bowling {
 
         this.sceneObjects.push({
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'pin'
         });
 
         return {
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'pin'
         };
     }
 
@@ -225,12 +272,14 @@ class Bowling {
         this.scene.add(mesh);
         this.sceneObjects.push({
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'ball'
         });
 
         return {
             mesh: mesh,
-            body: body
+            body: body,
+            type: 'ball'
         };
     }
 
@@ -268,6 +317,19 @@ class Bowling {
             this.ball.body.position.set(0, 0, 0);
             this.ball.body.velocity.set(0, 0, 0);
             this.ball.body.angularVelocity.set(0, 0, 0);
+
+            // Remove pins that are below the ground
+            this.sceneObjects.forEach((el) => {
+                if(el.type === 'pin') {
+                    if(el.body.position.y < -0.15) {
+                        this.scene.remove(el.mesh);
+                        this.world.remove(el.body);
+                    }
+                }  
+            });
+
+            // Throw ball again
+            this.ballThrown = false;
         }
 
         // Copy coordinates from Cannon.js to Three.js
