@@ -15,12 +15,13 @@ const sizes = {
 class Bowling {
     constructor() {
         this.world = new CANNON.World();
+        this.world.allowSleep = true;
         this.timeStep = 1 / 60;
         this.scene = new THREE.Scene();
         this.sceneObjects = [];
 
-        this.pinOffset = 10;
-        this.pinRows = 3;
+        this.pinOffset = 20;
+        this.pinRows = 4;
 
         const canvas = document.querySelector(".webgl")
         this.renderer = new THREE.WebGLRenderer({
@@ -44,7 +45,7 @@ class Bowling {
         this.ball = this.createSphere(this.ballMaterial);
         this.ballThrown = false;
 
-        this.createBox(0, -0.4, -12, 3, 0.2, 25); // 1.28 official width
+        this.createBox(0, -0.4, -10, 1.28, 0.2, 22); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
         this.light2 = this.createDirectionalLight(-20, 20, -50);
         this.light3 = this.createAmbiantLight();
@@ -101,38 +102,38 @@ class Bowling {
 
         const onKeyDown = (event) => {
             // Reset
-            if(event.keyCode === 82) { // r / Reset
+            if (event.keyCode === 82) { // r / Reset
                 location.reload();
             }
 
-            if(this.ballThrown === false) {
+            if (this.ballThrown === false) {
                 switch (event.keyCode) {
                     // Throw ball
                     case 32: // space / Throw ball
-                        object.body.applyImpulse(new CANNON.Vec3(0+rotation, 0, strength), object.body.position);
+                        object.body.applyImpulse(new CANNON.Vec3(0 + rotation, 0, strength), object.body.position);
                         this.ballThrown = true;
                         break;
 
                     // Move
                     case 37: // left / Move left
-                        if(object.body.position.x > -.5) {
+                        if (object.body.position.x > -.5) {
                             object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
                         }
                         break;
                     case 39: // right / Move right
-                        if(object.body.position.x < .5) {
+                        if (object.body.position.x < .5) {
                             object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
                         }
                         break;
 
                     // Rotation
                     case 38: // up / Increase rotation
-                        if(rotation < 6) {
+                        if (rotation < 6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), rotation += .75);
                         }
                         break;
                     case 40: // down / Decrease rotation
-                        if(rotation > -6) {
+                        if (rotation > -6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
                         }
                         break;
@@ -163,7 +164,7 @@ class Bowling {
     createBox(x, y, z, width, height, depth) {
         const shape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, depth / 2));
         const body = new CANNON.Body({
-            mass: 0
+            mass: 0,
         });
         body.addShape(shape);
         body.position.set(x, y, z);
@@ -214,9 +215,10 @@ class Bowling {
         const bottomDiameter = 0.055;
         const shape = new CANNON.Cylinder(topDiameter, bottomDiameter, 0.38, 10);
         const body = new CANNON.Body({
-            mass: 1.5,
+            mass: .5,
+            sleepSpeedLimit: 0.2,
+            sleepTimeLimit: 0.1,
         });
-        body.sleep = true;
         body.addShape(shape);
         body.position.set(x, y, z - this.pinOffset);
 
@@ -234,18 +236,18 @@ class Bowling {
         const mesh = new THREE.Mesh(geometry, material);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        // const texture = this.pinTexture.clone();
+        const texture = this.pinTexture.clone();
 
-        this.scene.add(mesh);
+        this.scene.add(texture);
 
         this.sceneObjects.push({
-            mesh: mesh,
+            mesh: texture,
             body: body,
             type: 'pin'
         });
 
         return {
-            mesh: mesh,
+            mesh: texture,
             body: body,
             type: 'pin'
         };
@@ -254,7 +256,8 @@ class Bowling {
     createSphere(texture) {
         const shape = new CANNON.Sphere(0.11);
         const body = new CANNON.Body({
-            mass: 12
+            mass: 12,
+            allowSleep: false,
         });
         body.addShape(shape);
         this.world.addBody(body);
@@ -320,12 +323,12 @@ class Bowling {
 
             // Remove pins that are below the ground
             this.sceneObjects.forEach((el) => {
-                if(el.type === 'pin') {
-                    if(el.body.position.y < -0.15) {
+                if (el.type === 'pin') {
+                    if (el.body.position.y < -0.15) {
                         this.scene.remove(el.mesh);
                         this.world.remove(el.body);
                     }
-                }  
+                }
             });
 
             // Throw ball again
