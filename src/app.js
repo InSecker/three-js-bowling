@@ -95,17 +95,25 @@ class Bowling {
     }
 
     initControl(object) {
-        const strength = -150;
+        let strength = -160;
         let throwBall = false;
         let rotation = 0;
 
         const onKeyDown = (event) => {
+            // Reset
+            if(event.keyCode === 82) { // r / Reset
+                location.reload();
+            }
+            
             if(throwBall === false) {
                 switch (event.keyCode) {
+                    // Throw ball
                     case 32: // space / Throw ball
                         object.body.applyImpulse(new CANNON.Vec3(0+rotation, 0, strength), object.body.position);
                         throwBall = true;
                         break;
+
+                    // Move
                     case 37: // left / Move left
                         if(object.body.position.x > -.5) {
                             object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
@@ -116,6 +124,8 @@ class Bowling {
                             object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
                         }
                         break;
+
+                    // Rotation
                     case 38: // up / Increase rotation
                         if(rotation < 6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), rotation += .75);
@@ -125,6 +135,23 @@ class Bowling {
                         if(rotation > -6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
                         }
+                        break;
+
+                    // Strength    
+                    case 49: // 1 / Strength 1
+                        strength = -120;
+                        break;
+                    case 50: // 2 / Strength 2
+                        strength = -140;
+                        break;
+                    case 51: // 3 / Strength 3
+                        strength = -160;
+                        break;
+                    case 52: // 4 / Strength 4
+                        strength = -180;
+                        break;
+                    case 53: // 5 / Strength 5
+                        strength = -200;
                         break;
                 }
             };
