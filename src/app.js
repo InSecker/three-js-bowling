@@ -125,6 +125,7 @@ class Bowling {
                         if(rotation > -6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
                         }
+                        break;
                 }
             };
         };
