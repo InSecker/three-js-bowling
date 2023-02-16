@@ -48,6 +48,8 @@ class Bowling {
         this.ballRotation = 0;
         this.waitingThrow;
 
+        this.UIHelper = this.createUIHelper();
+    
         this.createBox(0, -0.4, -10, 1.28, 0.2, 22); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
         this.light2 = this.createDirectionalLight(-20, 20, -50);
@@ -83,6 +85,28 @@ class Bowling {
                 console.log('An error happened', error);
             }
         );
+    }
+
+    createUIHelper() {
+        const geometry = new THREE.BoxGeometry( .04, .01, 1.5 );
+        const material = new THREE.MeshBasicMaterial( {color: "#1572a1"} );
+        const mesh = new THREE.Mesh(geometry, material);
+
+        mesh.position.set(0, -.3, 0);
+        mesh.geometry.translate( 0, 0, -1 );
+
+        this.scene.add(mesh);
+        this.sceneObjects.push({
+            mesh: mesh,
+            body: mesh,
+            type: 'ui'
+        });
+
+        return {
+            mesh: mesh,
+            body: mesh,
+            type: 'ui'
+        };
     }
 
     createPins(numberOfRows) {
@@ -122,11 +146,13 @@ class Bowling {
                     case 37: // left / Move left
                         if (object.body.position.x > -.5) {
                             object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
+                            this.UIHelper.body.position.set(this.UIHelper.body.position.x -= .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
                         }
                         break;
                     case 39: // right / Move right
                         if (object.body.position.x < .5) {
                             object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
+                            this.UIHelper.body.position.set(this.UIHelper.body.position.x += .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
                         }
                         break;
 
@@ -134,11 +160,13 @@ class Bowling {
                     case 38: // up / Increase rotation
                         if (this.ballRotation < 6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), this.ballRotation += .75);
+                            this.UIHelper.body.rotation.y -= .0075;
                         }
                         break;
                     case 40: // down / Decrease rotation
                         if (this.ballRotation > -6) {
                             object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), this.ballRotation -= .75);
+                            this.UIHelper.body.rotation.y += .0075;
                         }
                         break;
 
@@ -353,6 +381,8 @@ class Bowling {
         // Reset value strength and rotation
         this.ballStrength = -100;
         this.ballRotation = 0;
+        this.UIHelper.body.rotation.y = 0;
+        this.UIHelper.body.position.x = 0;
 
         // Throw ball again
         this.ballThrown = false;
