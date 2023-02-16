@@ -97,7 +97,7 @@ class Bowling {
     }
 
     initControl(object) {
-        let strength = -160;
+        let strength = -80;
         let rotation = 0;
 
         const onKeyDown = (event) => {
@@ -112,6 +112,10 @@ class Bowling {
                     case 32: // space / Throw ball
                         object.body.applyImpulse(new CANNON.Vec3(0 + rotation, 0, strength), object.body.position);
                         this.ballThrown = true;
+
+                        setTimeout(() => {
+                            this.checkPins();
+                          }, "7000")
                         break;
 
                     // Move
@@ -317,22 +321,7 @@ class Bowling {
         this.camera.position.z = (this.ball.mesh.position.z + 4) * 0.7;
 
         if (this.ball.body.position.y < -2) {
-            this.ball.body.position.set(0, 0, 0);
-            this.ball.body.velocity.set(0, 0, 0);
-            this.ball.body.angularVelocity.set(0, 0, 0);
-
-            // Remove pins that are below the ground
-            this.sceneObjects.forEach((el) => {
-                if (el.type === 'pin') {
-                    if (el.body.position.y < -0.15) {
-                        this.scene.remove(el.mesh);
-                        this.world.remove(el.body);
-                    }
-                }
-            });
-
-            // Throw ball again
-            this.ballThrown = false;
+            this.checkPins();
         }
 
         // Copy coordinates from Cannon.js to Three.js
@@ -340,6 +329,25 @@ class Bowling {
             sceneObject.mesh.position.copy(sceneObject.body.position);
             sceneObject.mesh.quaternion.copy(sceneObject.body.quaternion);
         });
+    }
+
+    checkPins() {
+        this.ball.body.position.set(0, 0, 0);
+        this.ball.body.velocity.set(0, 0, 0);
+        this.ball.body.angularVelocity.set(0, 0, 0);
+
+        // Remove pins that are below the ground
+        this.sceneObjects.forEach((el) => {
+            if (el.type === 'pin') {
+                if (el.body.position.y < -0.15) {
+                    this.scene.remove(el.mesh);
+                    this.world.remove(el.body);
+                }
+            }
+        });
+
+        // Throw ball again
+        this.ballThrown = false;
     }
 
     initCannon() {
