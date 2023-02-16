@@ -18,10 +18,12 @@ class Bowling {
         this.world.allowSleep = true;
         this.timeStep = 1 / 60;
         this.scene = new THREE.Scene();
-        this.sceneObjects = [];        
+        this.sceneObjects = [];
 
         this.pinOffset = 20;
-        this.pinRows = 4;
+        this.pinRows = 3;
+
+        this.throwIndex = 0;
 
         const canvas = document.querySelector(".webgl")
         this.renderer = new THREE.WebGLRenderer({
@@ -50,7 +52,7 @@ class Bowling {
         this.chargeShot = false;
 
         this.UIHelper = this.createUIHelper();
-    
+
         this.createBox(0, -0.4, -10, 1.28, 0.2, 22); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
         this.light2 = this.createDirectionalLight(-20, 20, -50);
@@ -89,12 +91,12 @@ class Bowling {
     }
 
     createUIHelper() {
-        const geometry = new THREE.BoxGeometry( .04, .01, 1.5 );
-        const material = new THREE.MeshBasicMaterial( {color: "#288bbd"} );
+        const geometry = new THREE.BoxGeometry(.04, .01, 1.5);
+        const material = new THREE.MeshBasicMaterial({ color: "#288bbd" });
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.position.set(0, -.3, 0);
-        mesh.geometry.translate( 0, 0, -1 );
+        mesh.geometry.translate(0, 0, -1);
 
         this.scene.add(mesh);
         this.sceneObjects.push({
@@ -110,18 +112,20 @@ class Bowling {
         };
     }
 
-    createPins(numberOfRows) {
-        const rowGap = 0.2;
-        const colGap = 0.15;
+    createPins() {
+        const rowGap = 0.24;
+        const colGap = 0.16;
 
-        for (let i = 0; i < numberOfRows; i++) {
-            for (let j = 0; j < i + 1; j++) {
-                this.createCylinder(colGap * j, -0.1, -rowGap * i);
-                if (j > 0) {
-                    this.createCylinder(-colGap * j, -0.1, -rowGap * i);
-                }
-            }
-        }
+        this.createCylinder(0, -0.1, 0);
+        this.createCylinder(-colGap, -0.1, -rowGap);
+        this.createCylinder(colGap, -0.1, -rowGap);
+        this.createCylinder(0, -0.1, -rowGap * 2);
+        this.createCylinder(-colGap * 2, -0.1, -rowGap * 2);
+        this.createCylinder(colGap * 2, -0.1, -rowGap * 2);
+        this.createCylinder(-colGap * 1, -0.1, -rowGap * 3);
+        this.createCylinder(colGap * 1, -0.1, -rowGap * 3);
+        this.createCylinder(-colGap * 3, -0.1, -rowGap * 3);
+        this.createCylinder(colGap * 3, -0.1, -rowGap * 3);
     }
 
     initControl(object) {
@@ -136,27 +140,27 @@ class Bowling {
                 switch (event.keyCode) {
                     // Throw ball
                     case 32: // space / Throw ball
-                        if(this.chargeShot === false) {
+                        if (this.chargeShot === false) {
                             this.powerStrength();
                             this.chargeShot = true;
                         } else {
                             clearInterval(this.intervalStrength);
                             strengthMultiplier = document.getElementById('barStrength').style.height;
                             strengthMultiplier = -strengthMultiplier.substring(0, strengthMultiplier.length - 1);
-                            
-                            console.log(this.ballStrength+strengthMultiplier);
-                            object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength+strengthMultiplier), object.body.position);
+
+                            console.log(this.ballStrength + strengthMultiplier);
+                            object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength + strengthMultiplier), object.body.position);
                             this.ballThrown = true;
-    
+
                             this.waitingThrow = setTimeout(() => {
                                 this.checkPins();
-                              }, "8000")
+                            }, "8000")
                         }
                         break;
 
                     // Move
                     case 37: // left / Move left
-                        if(this.chargeShot === false) {
+                        if (this.chargeShot === false) {
                             if (object.body.position.x > -.5) {
                                 object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
                                 this.UIHelper.body.position.set(this.UIHelper.body.position.x -= .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
@@ -164,7 +168,7 @@ class Bowling {
                         }
                         break;
                     case 39: // right / Move right
-                        if(this.chargeShot === false) {
+                        if (this.chargeShot === false) {
                             if (object.body.position.x < .5) {
                                 object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
                                 this.UIHelper.body.position.set(this.UIHelper.body.position.x += .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
@@ -174,7 +178,7 @@ class Bowling {
 
                     // Rotation
                     case 38: // up / Increase rotation
-                        if(this.chargeShot === false) {
+                        if (this.chargeShot === false) {
                             if (this.ballRotation < 6) {
                                 object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), this.ballRotation += .75);
                                 this.UIHelper.body.rotation.y -= .0075;
@@ -182,7 +186,7 @@ class Bowling {
                         }
                         break;
                     case 40: // down / Decrease rotation
-                        if(this.chargeShot === false) {
+                        if (this.chargeShot === false) {
                             if (this.ballRotation > -6) {
                                 object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), this.ballRotation -= .75);
                                 this.UIHelper.body.rotation.y += .0075;
@@ -199,18 +203,17 @@ class Bowling {
     powerStrength() {
         var countingUp = 1;
         var i = 0;
-        
+
         function count() {
             i = i + (1 * countingUp);
-        
-            if (i == 100 || i == 0)
-            {
+
+            if (i == 100 || i == 0) {
                 countingUp *= -1;
             }
-            
+
             document.getElementById('barStrength').style.height = i + '%';
         }
-        
+
         this.intervalStrength = window.setInterval(count, 10);
     }
 
@@ -264,11 +267,11 @@ class Bowling {
     }
 
     createCylinder(x, y, z) {
-        const topDiameter = 0.055;
+        const topDiameter = 0.020;
         const bottomDiameter = 0.055;
         const shape = new CANNON.Cylinder(topDiameter, bottomDiameter, 0.38, 10);
         const body = new CANNON.Body({
-            mass: .5,
+            mass: 1.5,
             sleepSpeedLimit: 0.2,
             sleepTimeLimit: 0.1,
         });
@@ -369,8 +372,40 @@ class Bowling {
 
         this.camera.position.z = (this.ball.mesh.position.z + 4) * 0.7;
 
+        // Remove pins that are below the ground
+        this.sceneObjects.forEach((el) => {
+            if (el.type === 'pin') {
+                if (el.body.position.y < -0.15) {
+                    setTimeout(() => {
+                        // remove element from scene objects
+                        this.sceneObjects = this.sceneObjects.filter((e) => e !== el);
+                        this.scene.remove(el.mesh);
+                        this.world.remove(el.body);
+                    }, 1000);
+                }
+            }
+        });
+
         if (this.ball.body.position.y < -2) {
             this.checkPins();
+            setTimeout(() => {
+                // Throw ball again
+                this.ballThrown = false;
+                const score = this.countPins();
+                if (score === 10) {
+                    this.throwIndex = 2;
+                } else {
+                    this.throwIndex++;
+                }
+
+                if (this.throwIndex === 2) {
+                    setTimeout(() => {
+                        this.deleteAllPins();
+                        this.createPins();
+                        console.log(score);
+                    }, 2000);
+                }
+            }, 3000);
         }
 
         // Copy coordinates from Cannon.js to Three.js
@@ -380,34 +415,45 @@ class Bowling {
         });
     }
 
-    checkPins() {
-        // Clear timeout
-        clearTimeout(this.waitingThrow);
+    countPins() {
+        let count = 0;
+        this.sceneObjects.forEach((el) => {
+            if (el.type === 'pin') {
+                count++;
+            }
+        });
+        return 10 - count;
+    }
 
+    deleteAllPins() {
+        this.sceneObjects.forEach((el) => {
+            if (el.type === 'pin') {
+                // remove pin from scene objects
+                this.sceneObjects = this.sceneObjects.filter((e) => e !== el);
+                this.scene.remove(el.mesh);
+                this.world.remove(el.body);
+            }
+        });
+    }
+
+    checkPins() {
         // Reset ball position
         this.ball.body.position.set(0, 0, 0);
         this.ball.body.velocity.set(0, 0, 0);
         this.ball.body.angularVelocity.set(0, 0, 0);
-
-        // Remove pins that are below the ground
-        this.sceneObjects.forEach((el) => {
-            if (el.type === 'pin') {
-                if (el.body.position.y < -0.15) {
-                    this.scene.remove(el.mesh);
-                    this.world.remove(el.body);
-                }
-            }
-        });
 
         // Reset value strength and rotation
         this.ballRotation = 0;
         this.chargeShot = false;
         this.UIHelper.body.rotation.y = 0;
         this.UIHelper.body.position.x = 0;
+<<<<<<< HEAD
         document.getElementById('barStrength').style.height = '0%';
 
         // Throw ball again
         this.ballThrown = false;
+=======
+>>>>>>> 3020d65 (new scoring)
     }
 
     initCannon() {
