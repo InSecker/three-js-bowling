@@ -1,15 +1,9 @@
-# Cours Three.js - Leonard de Vinci 
+# Basic Three.js Bowling game
 
-## Setup
-Download [Node.js](https://nodejs.org/en/download/).
+## Controls
 
-``` bash
-# Install dependencies 
-npm install
+Space to start a shot, space again to throw
+Left and Right arrows to move shot
+Up and Down arrow to rotate shot
 
-# Run the local server 
-npm run dev
-
-# Build for production in the dist/ directory
-npm run build
-```
+https://bowling-mania.netlify.app/
