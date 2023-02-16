@@ -18,7 +18,7 @@ class Bowling {
         this.world.allowSleep = true;
         this.timeStep = 1 / 60;
         this.scene = new THREE.Scene();
-        this.sceneObjects = [];
+        this.sceneObjects = [];        
 
         this.pinOffset = 20;
         this.pinRows = 4;
@@ -44,9 +44,10 @@ class Bowling {
         );
         this.ball = this.createSphere(this.ballMaterial);
         this.ballThrown = false;
-        this.ballStrength = -100;
+        this.ballStrength = -40;
         this.ballRotation = 0;
         this.waitingThrow;
+        this.chargeShot = false;
 
         this.UIHelper = this.createUIHelper();
     
@@ -89,7 +90,7 @@ class Bowling {
 
     createUIHelper() {
         const geometry = new THREE.BoxGeometry( .04, .01, 1.5 );
-        const material = new THREE.MeshBasicMaterial( {color: "#1572a1"} );
+        const material = new THREE.MeshBasicMaterial( {color: "#288bbd"} );
         const mesh = new THREE.Mesh(geometry, material);
 
         mesh.position.set(0, -.3, 0);
@@ -124,6 +125,7 @@ class Bowling {
     }
 
     initControl(object) {
+        let strengthMultiplier;
         const onKeyDown = (event) => {
             // Reset
             if (event.keyCode === 82) { // r / Reset
@@ -134,63 +136,82 @@ class Bowling {
                 switch (event.keyCode) {
                     // Throw ball
                     case 32: // space / Throw ball
-                        object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength), object.body.position);
-                        this.ballThrown = true;
-
-                        this.waitingThrow = setTimeout(() => {
-                            this.checkPins();
-                          }, "8000")
+                        if(this.chargeShot === false) {
+                            this.powerStrength();
+                            this.chargeShot = true;
+                        } else {
+                            clearInterval(this.intervalStrength);
+                            strengthMultiplier = document.getElementById('barStrength').style.height;
+                            strengthMultiplier = -strengthMultiplier.substring(0, strengthMultiplier.length - 1);
+                            
+                            console.log(this.ballStrength+strengthMultiplier);
+                            object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength+strengthMultiplier), object.body.position);
+                            this.ballThrown = true;
+    
+                            this.waitingThrow = setTimeout(() => {
+                                this.checkPins();
+                              }, "8000")
+                        }
                         break;
 
                     // Move
                     case 37: // left / Move left
-                        if (object.body.position.x > -.5) {
-                            object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
-                            this.UIHelper.body.position.set(this.UIHelper.body.position.x -= .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
+                        if(this.chargeShot === false) {
+                            if (object.body.position.x > -.5) {
+                                object.body.position.set(object.body.position.x -= .08, object.body.position.y, object.body.position.z);
+                                this.UIHelper.body.position.set(this.UIHelper.body.position.x -= .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
+                            }
                         }
                         break;
                     case 39: // right / Move right
-                        if (object.body.position.x < .5) {
-                            object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
-                            this.UIHelper.body.position.set(this.UIHelper.body.position.x += .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
+                        if(this.chargeShot === false) {
+                            if (object.body.position.x < .5) {
+                                object.body.position.set(object.body.position.x += .08, object.body.position.y, object.body.position.z);
+                                this.UIHelper.body.position.set(this.UIHelper.body.position.x += .08, this.UIHelper.body.position.y, this.UIHelper.body.position.z);
+                            }
                         }
                         break;
 
                     // Rotation
                     case 38: // up / Increase rotation
-                        if (this.ballRotation < 6) {
-                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), this.ballRotation += .75);
-                            this.UIHelper.body.rotation.y -= .0075;
+                        if(this.chargeShot === false) {
+                            if (this.ballRotation < 6) {
+                                object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), this.ballRotation += .75);
+                                this.UIHelper.body.rotation.y -= .0075;
+                            }
                         }
                         break;
                     case 40: // down / Decrease rotation
-                        if (this.ballRotation > -6) {
-                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), this.ballRotation -= .75);
-                            this.UIHelper.body.rotation.y += .0075;
+                        if(this.chargeShot === false) {
+                            if (this.ballRotation > -6) {
+                                object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), this.ballRotation -= .75);
+                                this.UIHelper.body.rotation.y += .0075;
+                            }
                         }
-                        break;
-
-                    // Strength    
-                    case 49: // 1 / Strength 1
-                        this.ballStrength = -80;
-                        break;
-                    case 50: // 2 / Strength 2
-                        this.ballStrength = -100;
-                        break;
-                    case 51: // 3 / Strength 3
-                        this.ballStrength = -100;
-                        break;
-                    case 52: // 4 / Strength 4
-                        this.ballStrength = -150;
-                        break;
-                    case 53: // 5 / Strength 5
-                        this.ballStrength = -170;
                         break;
                 }
             };
         };
 
         document.addEventListener('keydown', onKeyDown, false);
+    }
+
+    powerStrength() {
+        var countingUp = 1;
+        var i = 0;
+        
+        function count() {
+            i = i + (1 * countingUp);
+        
+            if (i == 100 || i == 0)
+            {
+                countingUp *= -1;
+            }
+            
+            document.getElementById('barStrength').style.height = i + '%';
+        }
+        
+        this.intervalStrength = window.setInterval(count, 10);
     }
 
     createBox(x, y, z, width, height, depth) {
@@ -379,10 +400,11 @@ class Bowling {
         });
 
         // Reset value strength and rotation
-        this.ballStrength = -100;
         this.ballRotation = 0;
+        this.chargeShot = false;
         this.UIHelper.body.rotation.y = 0;
         this.UIHelper.body.position.x = 0;
+        document.getElementById('barStrength').style.height = '0%';
 
         // Throw ball again
         this.ballThrown = false;

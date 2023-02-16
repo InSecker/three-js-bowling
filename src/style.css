@@ -73,3 +73,18 @@ h1 {
     margin-bottom: 24px;
     text-align: center;
 }
+
+.UI #strength {
+    height: 100px;
+    width: 25px;
+    border: 2px solid rgb(166, 166, 166);
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.UI #strength #barStrength {
+    background: rgb(59, 177, 63);
+    width: 100%;
+}
