@@ -1,7 +1,6 @@
 import * as CANNON from "cannon";
 import * as THREE from 'three'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 // import * as dat from 'dat.gui';
 
@@ -31,11 +30,7 @@ class Bowling {
             antialias: true
         });
 
-        this.camera = this.createCamera();
         this.loadTexture();
-
-        const controls = new OrbitControls(this.camera, canvas)
-        controls.enableDamping = true
 
         const loaderBall = new THREE.TextureLoader();
         this.ballMaterial = loaderBall.load(
@@ -50,6 +45,8 @@ class Bowling {
         this.ballRotation = 0;
         this.waitingThrow;
         this.chargeShot = false;
+
+        this.camera = this.createCamera();
 
         this.UIHelper = this.createUIHelper();
 
@@ -362,6 +359,7 @@ class Bowling {
         camera.position.z = 6;
         camera.position.x = 0.2;
         camera.position.y = 0.5;
+        camera.lookAt(this.ball.mesh.position);
         this.scene.add(camera);
         return camera;
     }
@@ -405,9 +403,9 @@ class Bowling {
                         this.deleteAllPins();
                         this.createPins();
                         console.log(score);
-                    }, 2000);
+                    }, 500);
                 }
-            }, 3000);
+            }, 500);
         }
 
         // Copy coordinates from Cannon.js to Three.js
