@@ -46,7 +46,7 @@ class Bowling {
         );
         this.ball = this.createSphere(this.ballMaterial);
         this.ballThrown = false;
-        this.ballStrength = -40;
+        this.ballStrength = -80;
         this.ballRotation = 0;
         this.waitingThrow;
         this.chargeShot = false;
@@ -447,13 +447,7 @@ class Bowling {
         this.chargeShot = false;
         this.UIHelper.body.rotation.y = 0;
         this.UIHelper.body.position.x = 0;
-<<<<<<< HEAD
         document.getElementById('barStrength').style.height = '0%';
-
-        // Throw ball again
-        this.ballThrown = false;
-=======
->>>>>>> 3020d65 (new scoring)
     }
 
     initCannon() {
