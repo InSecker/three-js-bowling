@@ -387,6 +387,8 @@ class Bowling {
         });
 
         if (this.ball.body.position.y < -2) {
+            clearTimeout(this.waitingThrow);
+
             this.checkPins();
             setTimeout(() => {
                 // Throw ball again
