@@ -44,6 +44,9 @@ class Bowling {
         );
         this.ball = this.createSphere(this.ballMaterial);
         this.ballThrown = false;
+        this.ballStrength = -100;
+        this.ballRotation = 0;
+        this.waitingThrow;
 
         this.createBox(0, -0.4, -10, 1.28, 0.2, 22); // 1.28 official width
         this.light1 = this.createDirectionalLight(20, 20, -50);
@@ -97,9 +100,6 @@ class Bowling {
     }
 
     initControl(object) {
-        let strength = -160;
-        let rotation = 0;
-
         const onKeyDown = (event) => {
             // Reset
             if (event.keyCode === 82) { // r / Reset
@@ -110,8 +110,12 @@ class Bowling {
                 switch (event.keyCode) {
                     // Throw ball
                     case 32: // space / Throw ball
-                        object.body.applyImpulse(new CANNON.Vec3(0 + rotation, 0, strength), object.body.position);
+                        object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength), object.body.position);
                         this.ballThrown = true;
+
+                        this.waitingThrow = setTimeout(() => {
+                            this.checkPins();
+                          }, "8000")
                         break;
 
                     // Move
@@ -128,31 +132,31 @@ class Bowling {
 
                     // Rotation
                     case 38: // up / Increase rotation
-                        if (rotation < 6) {
-                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), rotation += .75);
+                        if (this.ballRotation < 6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, .25, 0), this.ballRotation += .75);
                         }
                         break;
                     case 40: // down / Decrease rotation
-                        if (rotation > -6) {
-                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), rotation -= .75);
+                        if (this.ballRotation > -6) {
+                            object.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, -.25, 0), this.ballRotation -= .75);
                         }
                         break;
 
                     // Strength    
                     case 49: // 1 / Strength 1
-                        strength = -120;
+                        this.ballStrength = -80;
                         break;
                     case 50: // 2 / Strength 2
-                        strength = -140;
+                        this.ballStrength = -100;
                         break;
                     case 51: // 3 / Strength 3
-                        strength = -160;
+                        this.ballStrength = -100;
                         break;
                     case 52: // 4 / Strength 4
-                        strength = -180;
+                        this.ballStrength = -150;
                         break;
                     case 53: // 5 / Strength 5
-                        strength = -200;
+                        this.ballStrength = -170;
                         break;
                 }
             };
@@ -317,22 +321,7 @@ class Bowling {
         this.camera.position.z = (this.ball.mesh.position.z + 4) * 0.7;
 
         if (this.ball.body.position.y < -2) {
-            this.ball.body.position.set(0, 0, 0);
-            this.ball.body.velocity.set(0, 0, 0);
-            this.ball.body.angularVelocity.set(0, 0, 0);
-
-            // Remove pins that are below the ground
-            this.sceneObjects.forEach((el) => {
-                if (el.type === 'pin') {
-                    if (el.body.position.y < -0.15) {
-                        this.scene.remove(el.mesh);
-                        this.world.remove(el.body);
-                    }
-                }
-            });
-
-            // Throw ball again
-            this.ballThrown = false;
+            this.checkPins();
         }
 
         // Copy coordinates from Cannon.js to Three.js
@@ -340,6 +329,33 @@ class Bowling {
             sceneObject.mesh.position.copy(sceneObject.body.position);
             sceneObject.mesh.quaternion.copy(sceneObject.body.quaternion);
         });
+    }
+
+    checkPins() {
+        // Clear timeout
+        clearTimeout(this.waitingThrow);
+
+        // Reset ball position
+        this.ball.body.position.set(0, 0, 0);
+        this.ball.body.velocity.set(0, 0, 0);
+        this.ball.body.angularVelocity.set(0, 0, 0);
+
+        // Remove pins that are below the ground
+        this.sceneObjects.forEach((el) => {
+            if (el.type === 'pin') {
+                if (el.body.position.y < -0.15) {
+                    this.scene.remove(el.mesh);
+                    this.world.remove(el.body);
+                }
+            }
+        });
+
+        // Reset value strength and rotation
+        this.ballStrength = -100;
+        this.ballRotation = 0;
+
+        // Throw ball again
+        this.ballThrown = false;
     }
 
     initCannon() {
