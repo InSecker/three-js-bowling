@@ -399,6 +399,7 @@ class Bowling {
                 }
 
                 if (this.throwIndex === 2) {
+                    this.throwIndex = 0;
                     setTimeout(() => {
                         this.deleteAllPins();
                         this.createPins();
