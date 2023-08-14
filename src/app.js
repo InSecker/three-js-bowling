@@ -130,25 +130,6 @@ class Bowling {
     initControl(object) {
         let strengthMultiplier;
 
-        document.addEventListener('click', () => {
-            if (this.chargeShot === false) {
-                this.powerStrength();
-                this.chargeShot = true;
-            } else {
-                clearInterval(this.intervalStrength);
-                strengthMultiplier = document.getElementById('barStrength').style.height;
-                strengthMultiplier = -strengthMultiplier.substring(0, strengthMultiplier.length - 1);
-
-                console.log(this.ballStrength + strengthMultiplier);
-                object.body.applyImpulse(new CANNON.Vec3(0 + this.ballRotation, 0, this.ballStrength + strengthMultiplier), object.body.position);
-                this.ballThrown = true;
-
-                this.waitingThrow = setTimeout(() => {
-                    this.checkPins();
-                }, "8000")
-            }
-        });
-
         const onKeyDown = (event) => {
             // Reset
             if (event.keyCode === 82) { // r / Reset

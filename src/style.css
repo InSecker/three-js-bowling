@@ -145,8 +145,6 @@ body {
     right: 0;
     bottom: 0;
 
-    pointer-events: none;
-
     color: white;
     padding: 24px;
 }
@@ -191,4 +189,21 @@ h1 {
 
 .controls {
     align-items: end;
+}
+
+.credit {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.credit > a {
+    color: white;
+    padding: 12px;
+    margin: -12px;
 }
